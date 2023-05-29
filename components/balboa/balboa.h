@@ -8,6 +8,7 @@
 
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/climate/climate.h"
+#include "esphome/components/globals/globals_component.h"
 
 #include "esphome/components/time/real_time_clock.h"
 
@@ -71,6 +72,8 @@ class BalboaComponent : public uart::UARTDevice, public Component {
 
   void set_rtc(time::RealTimeClock *x) { rtc = x; }
 
+  void set_serialenabled_var(globals::GlobalsComponent<bool> *x) { serialenabled = x; }
+
  protected:
   std::string id;
 
@@ -81,6 +84,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
   BalboaSwitch *light1;
   BalboaSwitch *pump1;
   BalboaSwitch *pump2;
+  globals::GlobalsComponent<bool> *serialenabled;
 
   BalboaClimate *thermostat;
 

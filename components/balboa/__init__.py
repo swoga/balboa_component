@@ -1,7 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import uart, time
+from esphome.components import uart, time, globals
 from esphome.const import CONF_ID, CONF_TIME_ID, CONF_UART_ID
+from .const import CONF_SERIALENABLED
 
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
@@ -24,7 +25,8 @@ CONFIG_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(BalboaComponent),
-            cv.Optional(CONF_TIME_ID): cv.use_id(time.RealTimeClock)
+            cv.Optional(CONF_TIME_ID): cv.use_id(time.RealTimeClock),
+            cv.Optional(CONF_SERIALENABLED): cv.use_id(globals.GlobalsComponent)
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -41,3 +43,7 @@ async def to_code(config):
     if CONF_TIME_ID in config:
         time_ = await cg.get_variable(config[CONF_TIME_ID])
         cg.add(var.set_rtc(time_))
+
+    if CONF_SERIALENABLED in config:
+        serialenabled = await cg.get_variable(config[CONF_SERIALENABLED])
+        cg.add(var.set_serialenabled_var(serialenabled))

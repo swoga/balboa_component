@@ -4,6 +4,10 @@ namespace esphome {
 namespace balboa {
 
 void BalboaComponent::rs485_receive() {
+  if (serialenabled && !serialenabled->value()) {
+    return;
+  }
+
   while (available() > 0) {
     uint8_t data;
     if (!read_byte(&data)) {
