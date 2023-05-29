@@ -11,7 +11,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
       continue;
     }
 
-    ESP_LOGVV(TAG, "send message")
+    ESP_LOGV(TAG, "got clear to send, send msg from buffer");
     send_direct(my_channel, msg.msg, msg.length);
     msg_send_bufer.erase(it);
     return;
@@ -21,6 +21,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
 }
 
 void BalboaComponent::send_nothing_to_send() {
+  ESP_LOGVV(TAG, "nothing to send");
   uint8_t msg[] = {MSG_NothingToSend};
   send_direct(my_channel, msg, 1);
 }
@@ -41,12 +42,13 @@ void BalboaComponent::send_direct(uint8_t channel, uint8_t *msg, size_t msg_leng
   buffer[buffer_length - 2] = crc;
   buffer[buffer_length - 1] = MSME;
 
-  ESP_LOGVV("tx: %s", format_hex_pretty(buffer, buffer_length))
+  ESP_LOGVV("tx: %s", format_hex_pretty(buffer, buffer_length).c_str());
 
   write_array(buffer, buffer_length);
 }
 
 void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long time) {
+  ESP_LOGVV(TAG, "add msg (%s) to buffer to send at %i", format_hex_pretty(msg, length).c_str(), time);
   msg_send new_msg;
   new_msg.msg = msg;
   new_msg.length = length;
@@ -55,6 +57,7 @@ void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long ti
 }
 
 void BalboaComponent::send_toggle_item(uint8_t item, unsigned long time) {
+  ESP_LOGVV(TAG, "toggle item %i", item);
   uint8_t msg[] = {MSG_ToggleItem, item, 0x00};
   send_buffer(msg, 3, time);
 }

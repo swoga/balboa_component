@@ -16,7 +16,7 @@ void BalboaComponent::handle_new_client_clear_to_send() {
 
 void BalboaComponent::send_channel_request() {
   if (my_channel_requested) {
-    ESP_LOGVV(TAG, "channel already requested")
+    ESP_LOGVV(TAG, "channel already requested");
     return;
   }
   ESP_LOGD(TAG, "send channel request");

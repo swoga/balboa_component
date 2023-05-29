@@ -26,7 +26,7 @@ void BalboaComponent::parse() {
   while (this->buffer.size() >= 2) {
     uint8_t value = this->buffer[0];
     if (value != MSME) {
-      // discard non-MS byte
+      ESP_LOGV(TAG, "discard non-MS byte %02X", value);
       pop_n(this->buffer, 1);
       continue;
     }
@@ -34,22 +34,22 @@ void BalboaComponent::parse() {
     // MS found
 
     uint8_t length = this->buffer[1];
-    // check if length is plausible
     if (length < 5 || length >= 127) {
-      // discard MS and length
+      ESP_LOGV(TAG, "implausible length of %i, discard MS and length", length);
       pop_n(this->buffer, 2);
       return;
     }
 
     uint8_t totalLength = length + 2;
     if (totalLength > this->buffer.size()) {
-      // wait for more bytes
+      ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", totalLength, buffer.size());
       return;
     }
 
     uint8_t expectME = this->buffer[totalLength - 1];
     if (expectME != MSME) {
       // discard MS and try again
+      ESP_LOGV(TAG, "unexpected end %02X, discard MS and try again", expectME);
       pop_n(this->buffer, 1);
       continue;
     }
@@ -61,7 +61,7 @@ void BalboaComponent::parse() {
     uint8_t hasCRC = crc8(&this->buffer[1], totalLength - 3);
     uint8_t expectCRC = this->buffer[totalLength - 2];
     if (expectCRC != hasCRC) {
-      // DEBUG_SPA("invalid CRC, has: %02X, exp: %02X", hasCRC, expectCRC);
+      ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard whole message", hasCRC, expectCRC);
       pop_n(this->buffer, totalLength);
       return;
     }
@@ -74,13 +74,14 @@ void BalboaComponent::parse() {
     // message received
 
     if (this->first_message == 0) {
+      ESP_LOGD(TAG, "first message received");
       this->first_message = millis();
     }
 
     if (this->my_channel != 0 && !this->my_channel_confirmed) {
       unsigned long elapsed = millis() - first_message;
       if (elapsed > 10000) {
-        // no messages until timeout, remove cached channel
+        ESP_LOGI(TAG, "no messages received on cached channel until timeout, reset channel");
         this->set_channel(0);
       }
     }
@@ -150,6 +151,7 @@ float get_temp_value(uint8_t value) {
 
 void BalboaComponent::handle_status_update(uint8_t msg[], int length) {
   if (length < 27) {
+    ESP_LOGV(TAG, "discard status update");
     return;
   }
 
@@ -175,8 +177,9 @@ void BalboaComponent::handle_status_update(uint8_t msg[], int length) {
 
 void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
   auto now = rtc->now();
-  // check if esphome has synced time
+
   if (!now.is_valid()) {
+    ESP_LOGV(TAG, "MCU clock not synced, skip");
     return;
   }
 
@@ -185,6 +188,8 @@ void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
     return;
   }
   last_time_sync = now.timestamp;
+
+  ESP_LOGD(TAG, "check clock drift");
 
   int cur = now.hour * 60 + now.minute;
   int has = hour * 60 + minute;
@@ -202,12 +207,13 @@ void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
   }
   diff = std::min(diff, diff_over_mid);
 
+  ESP_LOGD(TAG, "time diff %i minutes", diff);
+
   // ignore diff smaller than 5 minutes
   if (diff < 5) {
     return;
   }
 
-  ESP_LOGI(TAG, "time diff %i minutes", diff);
   send_set_time(now.hour, now.minute);
 }
 
