@@ -4,10 +4,22 @@ namespace esphome {
 namespace balboa {
 
 void BalboaComponent::rs485_receive() {
-  uint8_t data;
-  while (this->read_byte(&data)) {
-    this->buffer.push_back(data);
-    this->parse();
+  while (available() > 0) {
+    uint8_t data;
+    if (!read_byte(&data)) {
+      continue;
+    }
+    if (buffer.size() > MAX_BUFFER_SIZE) {
+      ESP_LOGW(TAG, "receive buffer overflow");
+      buffer.erase(buffer.begin());
+    }
+    buffer.push_back(data);
+  }
+  while (buffer.size() >= 2) {
+    auto cont = parse();
+    if (!cont) {
+      break;
+    }
   }
 }
 
@@ -22,95 +34,95 @@ void pop_n(std::deque<uint8_t> &buffer, uint8_t n) {
   buffer.erase(buffer.begin(), it);
 }
 
-void BalboaComponent::parse() {
-  while (this->buffer.size() >= 2) {
-    uint8_t value = this->buffer[0];
-    if (value != MSME) {
-      ESP_LOGV(TAG, "discard non-MS byte %02X", value);
-      pop_n(this->buffer, 1);
-      continue;
-    }
-
-    // MS found
-
-    uint8_t length = this->buffer[1];
-    if (length < 5 || length >= 127) {
-      ESP_LOGV(TAG, "implausible length of %i, discard MS and length", length);
-      pop_n(this->buffer, 2);
-      return;
-    }
-
-    uint8_t totalLength = length + 2;
-    if (totalLength > this->buffer.size()) {
-      ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", totalLength, buffer.size());
-      return;
-    }
-
-    uint8_t expectME = this->buffer[totalLength - 1];
-    if (expectME != MSME) {
-      // discard MS and try again
-      ESP_LOGV(TAG, "unexpected end %02X, discard MS and try again", expectME);
-      pop_n(this->buffer, 1);
-      continue;
-    }
-
-    // ME found
-
-    // buffer + 1 -> start after MS, at length
-    // totalLength - 3 -> remove MS and cut off CRC, ME
-    uint8_t hasCRC = crc8(&this->buffer[1], totalLength - 3);
-    uint8_t expectCRC = this->buffer[totalLength - 2];
-    if (expectCRC != hasCRC) {
-      ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard whole message", hasCRC, expectCRC);
-      pop_n(this->buffer, totalLength);
-      return;
-    }
-
-    // start after MS and length, at channel
-    uint8_t *msgStart = &this->buffer[2];
-    // remove MS, length and cut off CRC, ME (min = 3)
-    uint8_t msgLength = totalLength - 4;
-
-    // message received
-
-    if (this->first_message == 0) {
-      ESP_LOGD(TAG, "first message received");
-      this->first_message = millis();
-    }
-
-    if (this->my_channel != 0 && !this->my_channel_confirmed) {
-      unsigned long elapsed = millis() - first_message;
-      if (elapsed > 10000) {
-        ESP_LOGI(TAG, "no messages received on cached channel until timeout, reset channel");
-        this->set_channel(0);
-      }
-    }
-
-    uint8_t channel = msgStart[0];
-    uint8_t msg_type = msgStart[2];
-
-    // remove channel, unknown byte (0xAF / 0xBF) and msg type
-    msgStart += 3;
-    // (min = 0)
-    msgLength -= 3;
-
-    bool msg_has_channel = channel != 0;
-
-    if (channel == CHANNEL_MULTICAST) {
-      this->handle_multicast(msg_type, msgStart, msgLength);
-    } else if (channel == CHANNEL_BROADCAST) {
-      this->handle_broadcast(msg_type, msgStart, msgLength);
-    } else if (msg_has_channel && channel == my_channel) {
-      if (my_channel_confirmed) {
-        this->handle_unicast(msg_type, msgStart, msgLength);
-      } else {
-        // received msg on cached channel, need to validate if still ours
-        this->handle_unicast_unconfirmed(msg_type);
-      }
-    }
-
-    pop_n(this->buffer, totalLength);
+bool BalboaComponent::parse() {
+  uint8_t value = this->buffer[0];
+  if (value != MSME) {
+    ESP_LOGV(TAG, "discard non-MS byte %02X", value);
+    pop_n(this->buffer, 1);
+    return true;
   }
+
+  // MS found
+
+  uint8_t length = this->buffer[1];
+  if (length < 5 || length >= 127) {
+    ESP_LOGV(TAG, "implausible length of %i, discard MS and length", length);
+    pop_n(this->buffer, 2);
+    return true;
+  }
+
+  uint8_t totalLength = length + 2;
+  if (totalLength > this->buffer.size()) {
+    ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", totalLength, buffer.size());
+    return false;
+  }
+
+  uint8_t expectME = this->buffer[totalLength - 1];
+  if (expectME != MSME) {
+    // discard MS and try again
+    ESP_LOGV(TAG, "unexpected end %02X, discard MS and try again", expectME);
+    pop_n(this->buffer, 1);
+    return true;
+  }
+
+  // ME found
+
+  // buffer + 1 -> start after MS, at length
+  // totalLength - 3 -> remove MS and cut off CRC, ME
+  uint8_t hasCRC = crc8(&this->buffer[1], totalLength - 3);
+  uint8_t expectCRC = this->buffer[totalLength - 2];
+  if (expectCRC != hasCRC) {
+    ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard whole message", hasCRC, expectCRC);
+    pop_n(this->buffer, totalLength);
+    return true;
+  }
+
+  // start after MS and length, at channel
+  uint8_t *msgStart = &this->buffer[2];
+  // remove MS, length and cut off CRC, ME (min = 3)
+  uint8_t msgLength = totalLength - 4;
+
+  // message received
+
+  if (this->first_message == 0) {
+    ESP_LOGD(TAG, "first message received");
+    this->first_message = millis();
+  }
+
+  if (this->my_channel != 0 && !this->my_channel_confirmed) {
+    unsigned long elapsed = millis() - first_message;
+    if (elapsed > 10000) {
+      ESP_LOGI(TAG, "no messages received on cached channel until timeout, reset channel");
+      this->set_channel(0);
+    }
+  }
+
+  uint8_t channel = msgStart[0];
+  uint8_t msg_type = msgStart[2];
+
+  // remove channel, unknown byte (0xAF / 0xBF) and msg type
+  msgStart += 3;
+  // (min = 0)
+  msgLength -= 3;
+
+  bool msg_has_channel = channel != 0;
+
+  if (channel == CHANNEL_MULTICAST) {
+    this->handle_multicast(msg_type, msgStart, msgLength);
+  } else if (channel == CHANNEL_BROADCAST) {
+    this->handle_broadcast(msg_type, msgStart, msgLength);
+  } else if (msg_has_channel && channel == my_channel) {
+    if (my_channel_confirmed) {
+      this->handle_unicast(msg_type, msgStart, msgLength);
+    } else {
+      // received msg on cached channel, need to validate if still ours
+      this->handle_unicast_unconfirmed(msg_type);
+    }
+  }
+
+  pop_n(this->buffer, totalLength);
+
+  return true;
 }
 
 void BalboaComponent::handle_multicast(uint8_t type, uint8_t msg[], size_t length) {

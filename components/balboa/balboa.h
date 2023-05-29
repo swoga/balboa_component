@@ -23,6 +23,8 @@ class BalboaClimate;
 class BalboaSwitch;
 class BalboaLightSelect;
 
+const uint8_t MAX_BUFFER_SIZE = 256;
+
 const uint8_t MSME = 0x7E;
 const uint8_t CHANNEL_MULTICAST = 0xFE;
 const uint8_t CHANNEL_BROADCAST = 0xFF;
@@ -104,7 +106,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
 
   // receive
   void rs485_receive();
-  void parse();
+  bool parse();
   void handle_multicast(uint8_t msg_type, uint8_t msg[], size_t length);
   void handle_unicast(uint8_t msg_type, uint8_t msg[], size_t length);
   void handle_broadcast(uint8_t msg_type, uint8_t msg[], size_t length);

@@ -9,14 +9,7 @@ void BalboaComponent::setup() {
   this->my_channel_pref.load(&this->my_channel);
 }
 
-void BalboaComponent::loop() {
-  int available = this->available();
-  if (available == 0) {
-    return;
-  }
-
-  this->rs485_receive();
-}
+void BalboaComponent::loop() { this->rs485_receive(); }
 
 }  // namespace balboa
 }  // namespace esphome
