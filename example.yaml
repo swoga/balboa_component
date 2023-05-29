@@ -1,0 +1,92 @@
+esphome:
+  name: balboa
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+rp2040:
+  board: rpipicow
+  framework:
+    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
+    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  # encryption:
+  #   key: "9+x1Z6Ehbo2m1J+1bppZzMAv8FLe2yzMO0SOsnez6pA="
+
+ota:
+  password: "ac9dcf75e1f313b100cc68d38bbd21a6"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+uart:
+  - id: rs485
+    rx_pin: 1
+    tx_pin: 0
+    baud_rate: 115200
+
+time:
+  - platform: homeassistant
+    id: ntp
+
+balboa:
+  - uart_id: rs485
+    id: spa
+    time_id: ntp
+
+binary_sensor:
+  - platform: balboa
+    balboa_id: spa
+    heating:
+      id: heating
+      name: "Heizung"
+    circ:
+      id: circ
+      name: "Zirkulation"
+
+switch:
+  - platform: balboa
+    balboa_id: spa
+    highrange:
+      id: highrange
+      name: "x"
+    pump1:
+      id: pump1
+      name: "Pumpe Links"
+    pump2:
+      id: pump2
+      name: Pumpe Rechts
+    light1:
+      id: light1
+      name: "Licht 1"
+  
+climate:
+  - platform: balboa
+    balboa_id: spa
+    thermostat:
+      id: thermostat
+      name: Thermostat
+
+select:
+  - platform: balboa
+    light_id: light1
+    id: light1_color
+    name: Farbe
+    options:
+      - Rot
+      - Grün
+      - Blau
+      - Gelb
+      - Cyan
+      - Pink
+      - Weiss
+      - Regenbogen

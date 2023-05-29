@@ -1,0 +1,15 @@
+CONF_ITEM_ID = "item_id"
+
+CONF_HIGHRANGE = "highrange"
+CONF_HIGHRANGE_ITEM = 0x50
+CONF_LIGHT1 = "light1"
+CONF_LIGHT1_ITEM = 0x11
+CONF_PUMP1 = "pump1"
+CONF_PUMP1_ITEM = 0x04
+CONF_PUMP2 = "pump2"
+CONF_PUMP2_ITEM = 0x05
+
+CONF_CIRC = "circ"
+CONF_HEATING = "heating"
+
+CONF_THERMOSTAT = "thermostat"
