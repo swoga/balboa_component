@@ -69,7 +69,7 @@ bool BalboaComponent::parse() {
     return true;
   }
 
-  ESP_LOGVV(TAG, "received frame: %s", format_hex_pretty(&buffer[0], totalLength).c_str());
+  ESP_LOGVV(TAG, "rx: %s", format_hex_pretty(&buffer[0], totalLength).c_str());
 
   // ME found
 
@@ -172,6 +172,8 @@ void BalboaComponent::handle_status_update(uint8_t msg[], int length) {
     ESP_LOGV(TAG, "discard status update");
     return;
   }
+
+  ESP_LOGV(TAG, "received status update");
 
   publish(highrange, readBit(msg[10], 2), true);
   publish(heating, readBit(msg[10], 4) || readBit(msg[10], 5), true);

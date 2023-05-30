@@ -42,7 +42,7 @@ void BalboaComponent::send_direct(uint8_t channel, uint8_t *msg, size_t msg_leng
   buffer[buffer_length - 2] = crc;
   buffer[buffer_length - 1] = MSME;
 
-  ESP_LOGVV("tx: %s", format_hex_pretty(buffer, buffer_length).c_str());
+  ESP_LOGVV(TAG, "tx: %s", format_hex_pretty(buffer, buffer_length).c_str());
 
   write_array(buffer, buffer_length);
 }
