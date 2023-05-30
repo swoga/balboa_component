@@ -69,7 +69,7 @@ bool BalboaComponent::parse() {
     return true;
   }
 
-  ESP_LOGVV(TAG, "received frame: %s", format_hex_pretty(buffer[0], totalLength - 1).c_str());
+  ESP_LOGVV(TAG, "received frame: %s", format_hex_pretty(&buffer[0], totalLength).c_str());
 
   // ME found
 
