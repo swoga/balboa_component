@@ -24,4 +24,5 @@ async def to_code(config):
         conf = config[CONF_THERMOSTAT]
         var = cg.new_Pvariable(conf[CONF_ID])
         await climate.register_climate(var, conf)
+        cg.add(var.set_parent(parent))
         cg.add(parent.set_thermostat(var))
