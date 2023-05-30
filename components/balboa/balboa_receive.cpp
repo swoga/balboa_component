@@ -27,7 +27,7 @@ void BalboaComponent::rs485_receive() {
   }
 }
 
-void pop_n(std::deque<uint8_t> &buffer, uint8_t n) {
+void pop_n(std::vector<uint8_t> &buffer, uint8_t n) {
   if (n >= buffer.size()) {
     buffer.clear();
     return;

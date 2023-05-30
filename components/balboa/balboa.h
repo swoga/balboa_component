@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deque>
+#include <vector>
 #include "esphome/core/version.h"
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
@@ -93,7 +93,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
 
   time::RealTimeClock *rtc;
 
-  std::deque<uint8_t> buffer;
+  std::vector<uint8_t> buffer;
 
   unsigned long first_message = 0;
   unsigned long first_channel_message = 0;
@@ -107,7 +107,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
     this->my_channel_confirmed = true;
   }
 
-  std::deque<msg_send> msg_send_bufer;
+  std::vector<msg_send> msg_send_bufer;
 
   // receive
   void rs485_receive();
