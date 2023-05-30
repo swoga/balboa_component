@@ -209,7 +209,7 @@ void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
   }
   last_time_sync = now.timestamp;
 
-  ESP_LOGD(TAG, "check clock drift");
+  ESP_LOGD(TAG, "check clock drift, spa time: %i:%i", hour, minute);
 
   int cur = now.hour * 60 + now.minute;
   int has = hour * 60 + minute;

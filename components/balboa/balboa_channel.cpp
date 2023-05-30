@@ -69,7 +69,7 @@ void BalboaComponent::handle_unicast_unconfirmed(uint8_t msg_type) {
 
   unsigned long elapsed = millis() - first_channel_message;
   if (elapsed > 5000) {
-    ESP_LOGI(TAG, "confirm channel, no other messages received");
+    ESP_LOGI(TAG, "confirm channel %02X, no other messages received", my_channel);
     this->my_channel_confirmed = true;
   }
 }
