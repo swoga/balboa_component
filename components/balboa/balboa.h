@@ -25,6 +25,7 @@ class BalboaSwitch;
 class BalboaLightSelect;
 
 const size_t MAX_BUFFER_SIZE = 256;
+const size_t MAX_MSG_SEND_BUFFER = 32;
 
 const uint8_t MSME = 0x7E;
 const uint8_t CHANNEL_MULTICAST = 0xFE;

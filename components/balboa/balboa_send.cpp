@@ -53,6 +53,10 @@ void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long ti
   new_msg.msg = msg;
   new_msg.length = length;
   new_msg.time = time;
+  if (msg_send_bufer.size() > MAX_MSG_SEND_BUFFER) {
+    ESP_LOGW(TAG, "msg send buffer overflow");
+    msg_send_bufer.erase(msg_send_bufer.begin());
+  }
   msg_send_bufer.push_back(new_msg);
 }
 
