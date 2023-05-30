@@ -57,7 +57,7 @@ bool BalboaComponent::parse() {
 
   uint8_t totalLength = length + 2;
   if (totalLength > this->buffer.size()) {
-    ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", totalLength, buffer.size());
+    ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", buffer.size(), totalLength);
     return false;
   }
 
