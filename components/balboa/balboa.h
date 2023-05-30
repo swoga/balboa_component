@@ -12,6 +12,7 @@
 
 #include "esphome/components/time/real_time_clock.h"
 
+#include "crc.h"
 #include "switch.h"
 #include "select.h"
 #include "climate.h"
