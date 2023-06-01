@@ -43,7 +43,7 @@ void BalboaComponent::publish(BalboaClimate *sensor, climate::ClimateMode mode, 
 
   bool changed_mode = sensor->mode != mode;
   if (changed_mode) {
-    ESP_LOGD(TAG, "changed mode from %i to %i", LOG_STR_ARG(climate::climate_mode_to_string(sensor->mode)),
+    ESP_LOGD(TAG, "changed mode from %s to %s", LOG_STR_ARG(climate::climate_mode_to_string(sensor->mode)),
              LOG_STR_ARG(climate::climate_mode_to_string(mode)));
     any_change |= true;
     sensor->mode = mode;
