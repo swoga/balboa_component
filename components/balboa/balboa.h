@@ -50,8 +50,7 @@ static const char *const TAG = "balboa";
 
 struct msg_send {
   unsigned long time;
-  size_t length;
-  uint8_t *msg;
+  std::vector<uint8_t> msg;
 };
 
 class BalboaComponent : public uart::UARTDevice, public Component {

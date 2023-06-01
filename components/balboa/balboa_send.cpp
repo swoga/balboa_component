@@ -12,7 +12,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
     }
 
     ESP_LOGV(TAG, "got clear to send, send msg from buffer");
-    send_direct(my_channel, msg.msg, msg.length);
+    send_direct(my_channel, &msg.msg[0], msg.msg.size());
     msg_send_bufer.erase(it);
     return;
   }
@@ -49,9 +49,9 @@ void BalboaComponent::send_direct(uint8_t channel, uint8_t *msg, size_t msg_leng
 
 void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long time) {
   ESP_LOGVV(TAG, "add msg (%s) to buffer to send at %i", format_hex_pretty(msg, length).c_str(), time);
+  std::vector<uint8_t> msg_vec(&msg[0], &msg[length]);
   msg_send new_msg;
-  new_msg.msg = msg;
-  new_msg.length = length;
+  new_msg.msg = msg_vec;
   new_msg.time = time;
   if (msg_send_bufer.size() > MAX_MSG_SEND_BUFFER) {
     ESP_LOGW(TAG, "msg send buffer overflow");
