@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cmath>
 #include "esphome/core/version.h"
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
