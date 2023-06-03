@@ -33,16 +33,18 @@ const uint8_t MSME = 0x7E;
 const uint8_t CHANNEL_MULTICAST = 0xFE;
 const uint8_t CHANNEL_BROADCAST = 0xFF;
 
-const uint8_t MSG_NewClientClearToSend = 0x00;
-const uint8_t MSG_ChannelAssignmentRequest = 0x01;
-const uint8_t MSG_ChannelAssignmentResponse = 0x02;
-const uint8_t MSG_ChannelAssignmentAck = 0x03;
-const uint8_t MSG_ClearToSend = 0x06;
-const uint8_t MSG_NothingToSend = 0x07;
-const uint8_t MSG_ToggleItem = 0x11;
-const uint8_t MSG_StatusUpdate = 0x13;
-const uint8_t MSG_SetTargetTemp = 0x20;
-const uint8_t MSG_SetTime = 0x21;
+enum MessageType : uint8_t {
+  NewClientClearToSend = 0x00,
+  ChannelAssignmentRequest = 0x01,
+  ChannelAssignmentResponse = 0x02,
+  ChannelAssignmentAck = 0x03,
+  ClearToSend = 0x06,
+  NothingToSend = 0x07,
+  ToggleItem = 0x11,
+  StatusUpdate = 0x13,
+  SetTargetTemp = 0x20,
+  SetTime = 0x21,
+};
 
 const uint8_t ITEM_Restmode = 0x51;
 
@@ -113,9 +115,9 @@ class BalboaComponent : public uart::UARTDevice, public Component {
   // receive
   void rs485_receive();
   bool parse();
-  void handle_multicast(uint8_t msg_type, uint8_t msg[], size_t length);
-  void handle_unicast(uint8_t msg_type, uint8_t msg[], size_t length);
-  void handle_broadcast(uint8_t msg_type, uint8_t msg[], size_t length);
+  void handle_multicast(MessageType msg_type, uint8_t msg[], size_t length);
+  void handle_unicast(MessageType msg_type, uint8_t msg[], size_t length);
+  void handle_broadcast(MessageType msg_type, uint8_t msg[], size_t length);
 
   void handle_status_update(uint8_t msg[], int length);
 
@@ -128,7 +130,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
   void send_channel_request();
   void handle_channel_assignment_response(uint8_t msg[], size_t length);
   void send_channel_ack();
-  void handle_unicast_unconfirmed(uint8_t msg_type);
+  void handle_unicast_unconfirmed(MessageType msg_type);
 
   // send
   void handle_msg_clear_to_send();

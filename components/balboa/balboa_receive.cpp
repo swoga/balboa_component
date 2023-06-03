@@ -104,7 +104,7 @@ bool BalboaComponent::parse() {
   }
 
   uint8_t channel = msgStart[0];
-  uint8_t msg_type = msgStart[2];
+  auto msg_type = static_cast<MessageType>(msgStart[2]);
 
   // remove channel, unknown byte (0xAF / 0xBF) and msg type
   msgStart += 3;
@@ -131,28 +131,28 @@ bool BalboaComponent::parse() {
   return true;
 }
 
-void BalboaComponent::handle_multicast(uint8_t type, uint8_t msg[], size_t length) {
+void BalboaComponent::handle_multicast(MessageType type, uint8_t msg[], size_t length) {
   switch (type) {
-    case MSG_NewClientClearToSend:
+    case MessageType::NewClientClearToSend:
       handle_new_client_clear_to_send();
       break;
-    case MSG_ChannelAssignmentResponse:
+    case MessageType::ChannelAssignmentResponse:
       handle_channel_assignment_response(msg, length);
       break;
   }
 }
 
-void BalboaComponent::handle_unicast(uint8_t type, uint8_t msg[], size_t length) {
+void BalboaComponent::handle_unicast(MessageType type, uint8_t msg[], size_t length) {
   switch (type) {
-    case MSG_ClearToSend:
+    case MessageType::ClearToSend:
       handle_msg_clear_to_send();
       break;
   }
 }
 
-void BalboaComponent::handle_broadcast(uint8_t type, uint8_t msg[], size_t length) {
+void BalboaComponent::handle_broadcast(MessageType type, uint8_t msg[], size_t length) {
   switch (type) {
-    case MSG_StatusUpdate:
+    case MessageType::StatusUpdate:
       handle_status_update(msg, length);
       break;
   }
@@ -239,7 +239,7 @@ void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
 
 void BalboaComponent::send_set_time(uint8_t hour, uint8_t minute) {
   ESP_LOGI(TAG, "send set time %i:%i", hour, minute);
-  uint8_t msg[] = {MSG_SetTime, hour, minute};
+  uint8_t msg[] = {MessageType::SetTime, hour, minute};
   send_buffer(msg, 3);
 }
 

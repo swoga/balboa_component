@@ -22,7 +22,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
 
 void BalboaComponent::send_nothing_to_send() {
   ESP_LOGVV(TAG, "nothing to send");
-  uint8_t msg[] = {MSG_NothingToSend};
+  uint8_t msg[] = {MessageType::NothingToSend};
   send_direct(my_channel, msg, 1);
 }
 
@@ -62,7 +62,7 @@ void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long ti
 
 void BalboaComponent::send_toggle_item(uint8_t item, unsigned long time) {
   ESP_LOGVV(TAG, "toggle item %i", item);
-  uint8_t msg[] = {MSG_ToggleItem, item, 0x00};
+  uint8_t msg[] = {MessageType::ToggleItem, item, 0x00};
   send_buffer(msg, 3, time);
 }
 
