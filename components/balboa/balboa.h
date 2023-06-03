@@ -119,7 +119,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
   void handle_unicast(MessageType msg_type, uint8_t msg[], size_t length);
   void handle_broadcast(MessageType msg_type, uint8_t msg[], size_t length);
 
-  void handle_status_update(uint8_t msg[], int length);
+  void handle_status_update(uint8_t msg[], size_t length);
 
   time_t last_time_sync = 0;
   void handle_time_sync(uint8_t hour, uint8_t minute);

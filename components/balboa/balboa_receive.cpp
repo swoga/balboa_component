@@ -167,7 +167,7 @@ float get_temp_value(uint8_t value) {
   }
 }
 
-void BalboaComponent::handle_status_update(uint8_t msg[], int length) {
+void BalboaComponent::handle_status_update(uint8_t msg[], size_t length) {
   if (length < 27) {
     ESP_LOGV(TAG, "discard status update");
     return;
