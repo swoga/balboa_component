@@ -4,7 +4,7 @@ namespace esphome {
 namespace balboa {
 
 void BalboaComponent::handle_msg_clear_to_send() {
-  for (auto it = msg_send_bufer.cbegin(); it != msg_send_bufer.cend(); ++it) {
+  for (auto it = tx_buffer.cbegin(); it != tx_buffer.cend(); ++it) {
     auto msg = *it;
     // check if message should be sent in the future
     if (msg.time != 0 && msg.time > millis()) {
@@ -13,7 +13,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
 
     ESP_LOGV(TAG, "got clear to send, send msg from buffer");
     send_direct(my_channel, &msg.msg[0], msg.msg.size());
-    msg_send_bufer.erase(it);
+    tx_buffer.erase(it);
     return;
   }
 
@@ -53,11 +53,11 @@ void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long ti
   msg_send new_msg;
   new_msg.msg = msg_vec;
   new_msg.time = time;
-  if (msg_send_bufer.size() > MAX_MSG_SEND_BUFFER) {
+  if (tx_buffer.size() > MAX_MSG_SEND_BUFFER) {
     ESP_LOGW(TAG, "msg send buffer overflow");
-    msg_send_bufer.erase(msg_send_bufer.begin());
+    tx_buffer.erase(tx_buffer.begin());
   }
-  msg_send_bufer.push_back(new_msg);
+  tx_buffer.push_back(new_msg);
 }
 
 void BalboaComponent::send_toggle_item(uint8_t item, unsigned long time) {

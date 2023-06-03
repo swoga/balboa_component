@@ -108,7 +108,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
     this->my_channel_confirmed = true;
   }
 
-  std::vector<msg_send> msg_send_bufer;
+  std::vector<msg_send> tx_buffer;
 
   // receive
   void rs485_receive();
