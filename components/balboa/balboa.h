@@ -79,6 +79,8 @@ class BalboaComponent : public uart::UARTDevice, public Component {
 
   void set_serialenabled_var(globals::GlobalsComponent<bool> *x) { serialenabled = x; }
 
+  void set_timeout(uint32_t timeout, std::function<void()> &&f);
+
  protected:
   std::string id;
 

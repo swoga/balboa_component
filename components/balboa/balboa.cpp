@@ -11,5 +11,9 @@ void BalboaComponent::setup() {
 
 void BalboaComponent::loop() { this->rs485_receive(); }
 
+void BalboaComponent::set_timeout(uint32_t timeout, std::function<void()> &&f) {
+  Component::set_timeout(timeout, std::move(f));
+}
+
 }  // namespace balboa
 }  // namespace esphome

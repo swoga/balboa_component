@@ -10,6 +10,8 @@ class BalboaSwitch : public switch_::Switch {
  public:
   void set_item(uint8_t item) { this->item = item; }
   void set_parent(BalboaComponent *parent);
+  BalboaComponent *get_parent();
+  void send_toggle_item();
 
  protected:
   uint8_t item;
