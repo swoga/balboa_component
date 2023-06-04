@@ -39,52 +39,52 @@ void pop_n(std::vector<uint8_t> &buffer, uint8_t n) {
 }
 
 bool BalboaComponent::parse() {
-  uint8_t value = this->buffer[0];
+  uint8_t value = buffer.at(0);
   if (value != MSME) {
     ESP_LOGV(TAG, "discard non-MS byte %02X", value);
-    pop_n(this->buffer, 1);
+    pop_n(buffer, 1);
     return true;
   }
 
   // MS found
 
-  uint8_t length = this->buffer[1];
+  uint8_t length = buffer.at(1);
   if (length < 5 || length >= 127) {
     ESP_LOGV(TAG, "implausible length of %i, discard MS and try again", length);
-    pop_n(this->buffer, 1);
+    pop_n(buffer, 1);
     return true;
   }
 
   uint8_t totalLength = length + 2;
-  if (totalLength > this->buffer.size()) {
+  if (totalLength > buffer.size()) {
     ESP_LOGVV(TAG, "received %i bytes, wait for a total of %i", buffer.size(), totalLength);
     return false;
   }
 
-  uint8_t expectME = this->buffer[totalLength - 1];
+  uint8_t expectME = buffer.at(totalLength - 1);
   if (expectME != MSME) {
     // discard MS and try again
     ESP_LOGV(TAG, "unexpected end %02X, discard MS and try again", expectME);
-    pop_n(this->buffer, 1);
+    pop_n(buffer, 1);
     return true;
   }
 
-  ESP_LOGVV(TAG, "rx: %s", format_hex_pretty(&buffer[0], totalLength).c_str());
+  ESP_LOGVV(TAG, "rx: %s", format_hex_pretty(buffer.data(), totalLength).c_str());
 
   // ME found
 
   // buffer + 1 -> start after MS, at length
   // totalLength - 3 -> remove MS and cut off CRC, ME
-  uint8_t hasCRC = crc8(&this->buffer[1], totalLength - 3);
-  uint8_t expectCRC = this->buffer[totalLength - 2];
+  uint8_t hasCRC = crc8(buffer.data() + 1, totalLength - 3);
+  uint8_t expectCRC = buffer.at(totalLength - 2);
   if (expectCRC != hasCRC) {
     ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard MS and try again", hasCRC, expectCRC);
-    pop_n(this->buffer, 1);
+    pop_n(buffer, 1);
     return true;
   }
 
   // start after MS and length, at channel
-  uint8_t *msgStart = &this->buffer[2];
+  uint8_t *msgStart = buffer.data() + 2;
   // remove MS, length and cut off CRC, ME (min = 3)
   uint8_t msgLength = totalLength - 4;
 
@@ -126,7 +126,7 @@ bool BalboaComponent::parse() {
     }
   }
 
-  pop_n(this->buffer, totalLength);
+  pop_n(buffer, totalLength);
 
   return true;
 }
