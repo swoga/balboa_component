@@ -22,8 +22,8 @@ void BalboaComponent::send_channel_request() {
   ESP_LOGD(TAG, "send channel request");
   my_channel_requested = true;
 
-  uint8_t msg[] = {MessageType::ChannelAssignmentRequest, 0x02, CHANNEL_REQUEST_HASH1, CHANNEL_REQUEST_HASH2};
-  send_direct(CHANNEL_MULTICAST, msg, 4);
+  send_direct(CHANNEL_MULTICAST, MessageType::ChannelAssignmentRequest,
+              {0x02, CHANNEL_REQUEST_HASH1, CHANNEL_REQUEST_HASH2});
 }
 
 void BalboaComponent::handle_channel_assignment_response(uint8_t msg[], size_t length) {
@@ -49,8 +49,7 @@ void BalboaComponent::handle_channel_assignment_response(uint8_t msg[], size_t l
 
 void BalboaComponent::send_channel_ack() {
   ESP_LOGI(TAG, "send channel ack: %02X", my_channel);
-  uint8_t msg[] = {MessageType::ChannelAssignmentAck};
-  send_direct(my_channel, msg, 1);
+  send_direct(my_channel, MessageType::ChannelAssignmentAck, {});
 }
 
 void BalboaComponent::handle_unicast_unconfirmed(MessageType msg_type) {

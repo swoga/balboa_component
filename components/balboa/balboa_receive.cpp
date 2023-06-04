@@ -239,8 +239,7 @@ void BalboaComponent::handle_time_sync(uint8_t hour, uint8_t minute) {
 
 void BalboaComponent::send_set_time(uint8_t hour, uint8_t minute) {
   ESP_LOGI(TAG, "send set time %i:%i", hour, minute);
-  uint8_t msg[] = {MessageType::SetTime, hour, minute};
-  send_buffer(msg, 3);
+  send_buffer(MessageType::SetTime, {hour, minute});
 }
 
 }  // namespace balboa

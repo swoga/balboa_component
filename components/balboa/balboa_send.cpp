@@ -12,7 +12,7 @@ void BalboaComponent::handle_msg_clear_to_send() {
     }
 
     ESP_LOGV(TAG, "got clear to send, send msg from buffer");
-    send_direct(my_channel, &msg.msg[0], msg.msg.size());
+    send_direct(my_channel, msg.type, msg.data);
     tx_buffer.erase(it);
     return;
   }
@@ -22,48 +22,45 @@ void BalboaComponent::handle_msg_clear_to_send() {
 
 void BalboaComponent::send_nothing_to_send() {
   ESP_LOGVV(TAG, "nothing to send");
-  uint8_t msg[] = {MessageType::NothingToSend};
-  send_direct(my_channel, msg, 1);
+  send_direct(my_channel, MessageType::NothingToSend, {});
 }
 
-void BalboaComponent::send_direct(uint8_t channel, uint8_t *msg, size_t msg_length) {
-  // + channel, ?, ..msg.., CRC, ME
-  size_t total_length = msg_length + 4;
+void BalboaComponent::send_direct(uint8_t channel, MessageType type, const std::vector<uint8_t> data) {
+  // + channel, ?, type, ..data.., CRC, ME
+  size_t msg_length = data.size() + 5;
   // + MS, length
-  size_t buffer_length = total_length + 2;
-  uint8_t buffer[buffer_length];
+  size_t frame_length = msg_length + 2;
+  std::vector<uint8_t> frame;
+  frame.reserve(frame_length);
 
-  buffer[0] = MSME;
-  buffer[1] = total_length;
-  buffer[2] = channel;
-  buffer[3] = 0xBF;
-  memcpy(buffer + 4, msg, msg_length);
-  uint8_t crc = crc8(buffer + 1, buffer_length - 3);
-  buffer[buffer_length - 2] = crc;
-  buffer[buffer_length - 1] = MSME;
+  frame.push_back(MSME);
+  frame.push_back((uint8_t) msg_length);
+  frame.push_back(channel);
+  frame.push_back(0xBF);
+  frame.push_back(type);
+  frame.insert(frame.end(), data.begin(), data.end());
+  uint8_t crc = crc8(&frame[1], frame_length - 3);
+  frame.push_back(crc);
+  frame.push_back(MSME);
 
-  ESP_LOGVV(TAG, "tx: %s", format_hex_pretty(buffer, buffer_length).c_str());
+  ESP_LOGVV(TAG, "tx: %s", format_hex_pretty(frame).c_str());
 
-  write_array(buffer, buffer_length);
+  write_array(frame);
 }
 
-void BalboaComponent::send_buffer(uint8_t msg[], size_t length, unsigned long time) {
-  ESP_LOGVV(TAG, "add msg (%s) to buffer to send at %i", format_hex_pretty(msg, length).c_str(), time);
-  std::vector<uint8_t> msg_vec(&msg[0], &msg[length]);
-  msg_send new_msg;
-  new_msg.msg = msg_vec;
-  new_msg.time = time;
+void BalboaComponent::send_buffer(MessageType type, const std::vector<uint8_t> data, unsigned long time) {
+  ESP_LOGV(TAG, "add msg of type %02X with data %s to buffer to send at %i", type, format_hex_pretty(data).c_str(),
+           time);
   if (tx_buffer.size() > MAX_MSG_SEND_BUFFER) {
     ESP_LOGW(TAG, "msg send buffer overflow");
     tx_buffer.erase(tx_buffer.begin());
   }
-  tx_buffer.push_back(new_msg);
+  tx_buffer.push_back({type, data, time});
 }
 
 void BalboaComponent::send_toggle_item(uint8_t item, unsigned long time) {
-  ESP_LOGVV(TAG, "toggle item %i", item);
-  uint8_t msg[] = {MessageType::ToggleItem, item, 0x00};
-  send_buffer(msg, 3, time);
+  ESP_LOGV(TAG, "toggle item %02X", item);
+  send_buffer(MessageType::ToggleItem, {item, 0x00}, time);
 }
 
 }  // namespace balboa

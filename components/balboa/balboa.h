@@ -51,8 +51,9 @@ const uint8_t ITEM_Restmode = 0x51;
 static const char *const TAG = "balboa";
 
 struct msg_send {
+  MessageType type;
+  std::vector<uint8_t> data;
   unsigned long time;
-  std::vector<uint8_t> msg;
 };
 
 class BalboaComponent : public uart::UARTDevice, public Component {
@@ -135,7 +136,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
   // send
   void handle_msg_clear_to_send();
   void send_nothing_to_send();
-  void send_direct(uint8_t channel, uint8_t msg[], size_t msg_length);
+  void send_direct(uint8_t channel, MessageType type, const std::vector<uint8_t> data);
 
   // publish
   void publish(binary_sensor::BinarySensor *sensor, bool value, bool change_only);
@@ -144,7 +145,7 @@ class BalboaComponent : public uart::UARTDevice, public Component {
                bool change_only);
 
  public:
-  void send_buffer(uint8_t msg[], size_t length, unsigned long time = 0);
+  void send_buffer(MessageType type, const std::vector<uint8_t> data, unsigned long time = 0);
   void send_toggle_item(uint8_t item, unsigned long time = 0);
 };
 
