@@ -50,8 +50,8 @@ bool BalboaComponent::parse() {
 
   uint8_t length = this->buffer[1];
   if (length < 5 || length >= 127) {
-    ESP_LOGV(TAG, "implausible length of %i, discard MS and length", length);
-    pop_n(this->buffer, 2);
+    ESP_LOGV(TAG, "implausible length of %i, discard MS and try again", length);
+    pop_n(this->buffer, 1);
     return true;
   }
 
@@ -78,8 +78,8 @@ bool BalboaComponent::parse() {
   uint8_t hasCRC = crc8(&this->buffer[1], totalLength - 3);
   uint8_t expectCRC = this->buffer[totalLength - 2];
   if (expectCRC != hasCRC) {
-    ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard whole message", hasCRC, expectCRC);
-    pop_n(this->buffer, totalLength);
+    ESP_LOGV(TAG, "invalid crc %02X, expected %02X, discard MS and try again", hasCRC, expectCRC);
+    pop_n(this->buffer, 1);
     return true;
   }
 
