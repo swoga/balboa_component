@@ -42,7 +42,6 @@ balboa:
   - uart_id: rs485
     id: spa
     time_id: ntp
-    serialenabled: serialenabled
 
 binary_sensor:
   - platform: balboa
@@ -53,12 +52,6 @@ binary_sensor:
     circ:
       id: circ
       name: "Zirkulation"
-
-globals:
-  - id: serialenabled
-    type: boolean
-    restore_value: false
-    initial_value: "false"
 
 switch:
   - platform: balboa
@@ -75,17 +68,6 @@ switch:
     light1:
       id: light1
       name: "Licht 1"
-  - platform: template
-    id: serialenabled_switch
-    name: "serialenabled"
-    lambda: return id(serialenabled);
-    turn_on_action:
-      - lambda: |-
-          id(serialenabled) = true;
-    turn_off_action:
-      - lambda: |-
-          id(serialenabled) = false;
-
   
 climate:
   - platform: balboa

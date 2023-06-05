@@ -13,5 +13,3 @@ CONF_CIRC = "circ"
 CONF_HEATING = "heating"
 
 CONF_THERMOSTAT = "thermostat"
-
-CONF_SERIALENABLED = "serialenabled"
