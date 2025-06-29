@@ -12,7 +12,7 @@ BalboaClimate = balboa_ns.class_(
 CONFIG_SCHEMA = (
     BALBOA_COMPONENT_SCHEMA.extend(
         {
-            cv.Optional(CONF_THERMOSTAT): climate.CLIMATE_SCHEMA.extend({cv.GenerateID(): cv.declare_id(BalboaClimate)})
+            cv.Optional(CONF_THERMOSTAT): climate.climate_schema(BalboaClimate)
         }
     )
 )

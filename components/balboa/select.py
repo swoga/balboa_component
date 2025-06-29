@@ -13,9 +13,8 @@ BalboaLightSelect = balboa_ns.class_(
 CONF_LIGHT_ID = "light_id"
 
 CONFIG_SCHEMA = (
-    select.SELECT_SCHEMA.extend(
+    select.select_schema(BalboaLightSelect).extend(
         {
-            cv.GenerateID(): cv.declare_id(BalboaLightSelect),
             cv.Required(CONF_LIGHT_ID): cv.use_id(BalboaSwitch),
             cv.Optional(CONF_OPTIONS, default=["Red","Green","Blue","Yellow","Cyan","Pink","White","Rainbow"]): cv.All(
                 cv.ensure_list(cv.string_strict), cv.Length(min=1)
