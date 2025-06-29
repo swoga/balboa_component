@@ -8,9 +8,6 @@ external_components:
 
 rp2040:
   board: rpipicow
-  framework:
-    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
-    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
 
 # Enable logging
 logger:
@@ -65,7 +62,7 @@ switch:
     light1:
       id: light1
       name: "Licht 1"
-  
+
 climate:
   - platform: balboa
     balboa_id: spa
